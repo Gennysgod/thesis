@@ -223,11 +223,13 @@ class QuadCDDTrainer:
         self.val_losses = []
 
     def setup_optimizer(self, learning_rate: float = 1e-3,
-                       weight_decay: float = 1e-5):
-        """Setup optimizer and scheduler"""
-        self.optimizer = optim.Adam(
+                       weight_decay: float = 1e-5, momentum: float = 0.9):
+        """Setup optimizer and scheduler with SGD"""
+        # 更换为SGD优化器，添加动量参数，符合论文要求
+        self.optimizer = optim.SGD(
             self.model.parameters(),
             lr=learning_rate,
+            momentum=momentum,
             weight_decay=weight_decay
         )
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(
@@ -397,7 +399,7 @@ class QuadCDDTrainer:
         """Fine-tune pre-trained model on new data"""
         print("Fine-tuning QuadCDD model...")
 
-        # Setup optimizer with higher learning rate for fine-tuning
+        # Setup optimizer with higher learning rate for fine-tuning (matching paper Table 2)
         self.setup_optimizer(learning_rate=learning_rate)
 
         for epoch in range(epochs):

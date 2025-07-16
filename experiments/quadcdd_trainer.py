@@ -92,6 +92,7 @@ class QuadCDDPretrainer:
                             
                             # Generate accuracy sequence using online classifier
                             accuracy_sequence = generate_accuracy_sequence(X, y)
+
                             
                             # Create quadruple labels (normalized)
                             Ds = drift_start / 1000.0
@@ -194,9 +195,16 @@ class QuadCDDPretrainer:
             output_size=4
         )
         
-        # Setup training parameters
+        # Setup training parameters (matching paper Table 2)
         learning_rate = self.config.get('learning_rate', 1e-3)
-        self.trainer.setup_optimizer(learning_rate=learning_rate)
+        momentum = self.config.get('momentum', 0.9)
+        weight_decay = self.config.get('weight_decay', 1e-5)
+        
+        self.trainer.setup_optimizer(
+            learning_rate=learning_rate,
+            momentum=momentum,
+            weight_decay=weight_decay
+        )
         
         # Train model
         epochs = self.config.get('epochs', 50)
@@ -311,7 +319,7 @@ class QuadCDDPretrainer:
 
 
 def create_pretraining_config() -> Dict[str, Any]:
-    """Create default pre-training configuration"""
+    """Create default pre-training configuration matching paper Table 2"""
     
     return {
         # Data generation
@@ -326,11 +334,18 @@ def create_pretraining_config() -> Dict[str, Any]:
         'hidden_size_1': 128,
         'hidden_size_2': 64,
         
-        # Training parameters
+        # Training parameters (matching paper Table 2)
         'batch_size': 32,
-        'learning_rate': 1e-3,
+        'learning_rate': 1e-3,  # Pre-training learning rate
         'epochs': 50,
         'early_stopping_patience': 15,
+        'momentum': 0.9,  # SGD momentum
+        'weight_decay': 1e-5,
+        
+        # Fine-tuning parameters (matching paper Table 2)
+        'finetune_learning_rate': 1e-2,  # Fine-tuning learning rate
+        'finetune_epochs': 20,
+        'finetune_batch_size': 16,
         
         # Paths
         'model_save_dir': 'models/pretrained_models/',

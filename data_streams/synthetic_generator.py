@@ -34,8 +34,8 @@ class BaseDataGenerator(ABC):
             raise ValueError("drift_start must be less than drift_end")
         if self.drift_end >= self.n_samples:
             raise ValueError("drift_end must be less than n_samples")
-        if not 0 <= self.drift_severity <= 1:
-            raise ValueError("drift_severity must be between 0 and 1")
+        if not 0 <= self.drift_severity <= 2.0:  # Extended range for higher severity
+            raise ValueError("drift_severity must be between 0 and 2.0")
         if sum(self.imbalance_ratio) == 0:
             raise ValueError("imbalance_ratio cannot sum to zero")
 
@@ -49,89 +49,125 @@ class BaseDataGenerator(ABC):
         """Apply concept drift to the data stream"""
         pass
 
-    def _apply_class_imbalance_by_generation(self) -> pd.DataFrame:
-        """Generate data with target class imbalance by controlling generation process"""
+    def _apply_class_imbalance_by_concept_aware_generation(self) -> pd.DataFrame:
+        """Generate data with target class imbalance while preserving concept relationships"""
         target_ratio = np.array(self.imbalance_ratio) / sum(self.imbalance_ratio)
         target_class_1_ratio = target_ratio[1]
         
-        # Generate more data than needed, then select to achieve exact count and ratio
-        oversample_factor = 3  # Generate 3x more data
-        temp_n_samples = self.n_samples * oversample_factor
+        # Generate data in segments to maintain temporal order
+        pre_drift_samples = self.drift_start
+        drift_samples = self.drift_end - self.drift_start
+        post_drift_samples = self.n_samples - self.drift_end
         
-        # Temporarily increase n_samples for generation
-        original_n_samples = self.n_samples
-        self.n_samples = temp_n_samples
+        all_data = []
+        time_index = 0
         
-        # Generate base stream
-        X, y = self._generate_base_stream()
-        
-        # Apply concept drift
-        y_drifted = self._apply_concept_drift(X, y)
-        
-        # Restore original n_samples
-        self.n_samples = original_n_samples
-        
-        # Now select exactly n_samples with target ratio
-        final_indices = self._select_balanced_indices(y_drifted, target_class_1_ratio)
-        
-        X_final = X[final_indices]
-        y_final = y_drifted[final_indices]
-        
-        # Create time index
-        time_index = np.arange(len(X_final))
+        # Generate each segment separately to maintain concept relationships
+        for segment_samples, segment_start, segment_end in [
+            (pre_drift_samples, 0, self.drift_start),
+            (drift_samples, self.drift_start, self.drift_end), 
+            (post_drift_samples, self.drift_end, self.n_samples)
+        ]:
+            if segment_samples <= 0:
+                continue
+                
+            # Generate more data for this segment
+            oversample_factor = 2
+            temp_samples = max(segment_samples * oversample_factor, 100)
+            
+            # Temporarily adjust parameters for segment generation
+            original_n_samples = self.n_samples
+            original_drift_start = self.drift_start
+            original_drift_end = self.drift_end
+            
+            self.n_samples = temp_samples
+            self.drift_start = 0 if segment_start == 0 else int(temp_samples * 0.3)
+            self.drift_end = temp_samples if segment_end == original_n_samples else int(temp_samples * 0.7)
+            
+            # Generate segment data
+            X, y = self._generate_base_stream()
+            
+            # Apply drift if this is the appropriate segment
+            if segment_start >= original_drift_start:
+                y_drifted = self._apply_concept_drift(X, y)
+            else:
+                y_drifted = y.copy()
+            
+            # Restore original parameters
+            self.n_samples = original_n_samples
+            self.drift_start = original_drift_start  
+            self.drift_end = original_drift_end
+            
+            # Select samples to achieve target ratio for this segment
+            selected_indices = self._select_balanced_indices_preserve_order(
+                y_drifted, target_class_1_ratio, segment_samples
+            )
+            
+            X_segment = X[selected_indices]
+            y_segment = y_drifted[selected_indices]
+            
+            # Add to complete dataset with correct time indices
+            for i, (x_row, y_val) in enumerate(zip(X_segment, y_segment)):
+                data_point = list(x_row) + [y_val, time_index]
+                all_data.append(data_point)
+                time_index += 1
         
         # Create DataFrame
-        columns = [f'x{i+1}' for i in range(X_final.shape[1])] + ['y', 'time_index']
-        data = np.column_stack([X_final, y_final, time_index])
-        
-        return pd.DataFrame(data, columns=columns)
-
-    def _select_balanced_indices(self, y: np.ndarray, target_class_1_ratio: float) -> np.ndarray:
-        """Select indices to achieve target sample count and class ratio"""
-        # Calculate target counts
-        target_class_1_count = int(self.n_samples * target_class_1_ratio)
-        target_class_0_count = self.n_samples - target_class_1_count
+        columns = [f'x{i+1}' for i in range(X.shape[1])] + ['y', 'time_index']
+        return pd.DataFrame(all_data, columns=columns)
+    
+    def _select_balanced_indices_preserve_order(self, y: np.ndarray, 
+                                              target_class_1_ratio: float, 
+                                              target_count: int) -> np.ndarray:
+        """Select indices to achieve target ratio while preserving temporal order"""
+        target_class_1_count = int(target_count * target_class_1_ratio)
+        target_class_0_count = target_count - target_class_1_count
         
         # Ensure minimum counts
         target_class_1_count = max(1, target_class_1_count)
         target_class_0_count = max(1, target_class_0_count)
         
-        # Get indices for each class
+        # Get indices for each class in order
         class_0_indices = np.where(y == 0)[0]
         class_1_indices = np.where(y == 1)[0]
         
-        # Sample from each class
+        # Sample evenly across the time series to maintain temporal distribution
         selected_indices = []
         
-        if len(class_0_indices) >= target_class_0_count:
-            selected_0 = np.random.choice(class_0_indices, target_class_0_count, replace=False)
+        if len(class_0_indices) > 0:
+            if len(class_0_indices) >= target_class_0_count:
+                # Sample evenly across available indices
+                step = len(class_0_indices) / target_class_0_count
+                selected_0 = [class_0_indices[int(i * step)] for i in range(target_class_0_count)]
+            else:
+                # Use all available and repeat if necessary
+                repeats = target_class_0_count // len(class_0_indices) + 1
+                selected_0 = np.tile(class_0_indices, repeats)[:target_class_0_count]
             selected_indices.extend(selected_0)
-        else:
-            # If not enough class 0, use all and sample with replacement
-            selected_0 = np.random.choice(class_0_indices, target_class_0_count, replace=True)
-            selected_indices.extend(selected_0)
         
-        if len(class_1_indices) >= target_class_1_count:
-            selected_1 = np.random.choice(class_1_indices, target_class_1_count, replace=False)
-            selected_indices.extend(selected_1)
-        else:
-            # If not enough class 1, use all and sample with replacement
-            selected_1 = np.random.choice(class_1_indices, target_class_1_count, replace=True)
+        if len(class_1_indices) > 0:
+            if len(class_1_indices) >= target_class_1_count:
+                step = len(class_1_indices) / target_class_1_count  
+                selected_1 = [class_1_indices[int(i * step)] for i in range(target_class_1_count)]
+            else:
+                repeats = target_class_1_count // len(class_1_indices) + 1
+                selected_1 = np.tile(class_1_indices, repeats)[:target_class_1_count]
             selected_indices.extend(selected_1)
         
-        # Sort to maintain some temporal order
-        selected_indices = sorted(selected_indices)
-        
-        return np.array(selected_indices)
+        # Sort to maintain temporal order
+        return np.array(sorted(selected_indices))
 
     def generate_stream(self) -> pd.DataFrame:
         """Generate complete data stream with concept drift and class imbalance"""
-        return self._apply_class_imbalance_by_generation()
+        return self._apply_class_imbalance_by_concept_aware_generation()
 
 class SINE1Generator(BaseDataGenerator):
-    """SINE1 generator with proper concept drift implementation"""
+    """SINE1 generator with enhanced concept drift implementation"""
     
     def __init__(self, **kwargs):
+        # Set default higher drift severity for SINE1 (0.5)
+        if 'drift_severity' not in kwargs:
+            kwargs['drift_severity'] = 0.5
         super().__init__(n_features=2, **kwargs)
 
     def _generate_base_stream(self) -> Tuple[np.ndarray, np.ndarray]:
@@ -141,10 +177,11 @@ class SINE1Generator(BaseDataGenerator):
         return np.array(X), np.array(y).flatten()
 
     def _apply_concept_drift(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Apply concept drift by shifting sine function"""
+        """Apply concept drift by shifting sine function with higher severity"""
         y_drifted = y.copy()
         
         if self.drift_start < self.drift_end:
+            # Use higher severity (0.5 * π instead of 0.15 * π)
             shift = self.drift_severity * np.pi
             
             if self.drift_type == 'sudden':
@@ -167,9 +204,12 @@ class SINE1Generator(BaseDataGenerator):
         return y_drifted
 
 class SEAGenerator(BaseDataGenerator):
-    """SEA generator with proper concept drift implementation"""
+    """SEA generator with enhanced concept drift implementation"""
     
     def __init__(self, **kwargs):
+        # Set default higher drift severity for SEA (0.35 -> threshold_change = 3.5)
+        if 'drift_severity' not in kwargs:
+            kwargs['drift_severity'] = 0.35
         super().__init__(n_features=3, **kwargs)
 
     def _generate_base_stream(self) -> Tuple[np.ndarray, np.ndarray]:
@@ -179,11 +219,12 @@ class SEAGenerator(BaseDataGenerator):
         return np.array(X), np.array(y).flatten()
 
     def _apply_concept_drift(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """Apply concept drift by changing threshold"""
+        """Apply concept drift by changing threshold with higher severity"""
         y_drifted = y.copy()
         
         original_threshold = 8.0
-        threshold_change = self.drift_severity * 4.0
+        # Use threshold_change = 3.5 (drift_severity * 10)
+        threshold_change = self.drift_severity * 10.0
         new_threshold = original_threshold + threshold_change
         
         if self.drift_start < self.drift_end:
@@ -206,9 +247,11 @@ class SEAGenerator(BaseDataGenerator):
         
         return y_drifted
 
-# 其他生成器保持相同的修改模式...
 class CircleGenerator(BaseDataGenerator):
     def __init__(self, **kwargs):
+        # Set default higher drift severity for Circle (1.0)
+        if 'drift_severity' not in kwargs:
+            kwargs['drift_severity'] = 1.0
         super().__init__(n_features=2, **kwargs)
         self.radius_before = 0.5
         self.radius_after = 0.5 + self.drift_severity * 0.3

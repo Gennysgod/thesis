@@ -1,6 +1,7 @@
 import numpy as np
 from .base_detector import BaseDetector
 from collections import deque
+from river import tree
 
 # Try to import skmultiflow DDM
 try:
@@ -12,7 +13,7 @@ except ImportError:
     print("✗ skmultiflow DDM not available, using simple fallback")
 
 class DDMDetector(BaseDetector):
-    """DDM drift detector with skmultiflow support and fallback"""
+    """DDM drift detector with river-based incremental learning"""
     
     def __init__(self, warning_level: float = 2.0, drift_level: float = 3.0, **kwargs):
         super().__init__("DDM")
@@ -22,16 +23,20 @@ class DDMDetector(BaseDetector):
         # Initialize DDM detector
         if SKMULTIFLOW_AVAILABLE:
             # skmultiflow 0.5.3 DDM uses 'out_control_level' instead of 'drift_level'
-            self.detector = DDM(warning_level=warning_level, out_control_level=drift_level)
-            self.backend = 'skmultiflow'
-            print(f"✓ DDM initialized with skmultiflow backend (warn={warning_level}, out_control={drift_level})")
+            try:
+                self.detector = DDM(warning_level=warning_level, out_control_level=drift_level)
+                self.backend = 'skmultiflow'
+                print(f"✓ DDM initialized with skmultiflow backend (warn={warning_level}, out_control={drift_level})")
+            except Exception as e:
+                print(f"✗ skmultiflow DDM initialization failed: {e}")
+                self._init_simple_ddm()
         else:
             self._init_simple_ddm()
         
-        # Error tracking for prediction
-        self.window_size = 30
-        self.feature_window = deque(maxlen=self.window_size)
-        self.label_window = deque(maxlen=self.window_size)
+        # River-based incremental classifier for prediction
+        self.incremental_classifier = tree.HoeffdingTreeClassifier()
+        self.samples_seen = 0
+        self.min_samples_for_prediction = 10
         
     def _init_simple_ddm(self):
         """Initialize simple DDM implementation as fallback"""
@@ -53,13 +58,25 @@ class DDMDetector(BaseDetector):
         print("✓ DDM initialized with simple fallback backend")
         
     def update(self, X: np.ndarray, y: np.ndarray) -> bool:
-        """Update DDM with new data point"""
-        # Store recent data for prediction
-        self.feature_window.append(X)
-        self.label_window.append(y)
+        """Update DDM with new data point using river-based prediction"""
         
-        # Calculate prediction error (DDM expects 0 for correct, 1 for incorrect)
-        prediction_error = self._calculate_prediction_error(y)
+        # Convert inputs to proper format
+        if X.ndim > 1:
+            X = X.flatten()
+        
+        # Convert to dict format for river
+        x_dict = {f'x{i}': float(X[i]) for i in range(len(X))}
+        
+        # Ensure y is scalar int
+        if np.isarray(y):
+            y_val = int(y.item() if y.size == 1 else y[0])
+        else:
+            y_val = int(y)
+        
+        self.samples_seen += 1
+        
+        # Calculate prediction error using incremental classifier (DDM expects 0/1)
+        prediction_error = self._calculate_incremental_prediction_error(x_dict, y_val)
         
         # Update detector based on backend
         drift_detected = False
@@ -69,31 +86,40 @@ class DDMDetector(BaseDetector):
         else:
             drift_detected = self._update_simple(prediction_error)
         
+        # Update the incremental classifier after prediction
+        try:
+            self.incremental_classifier.learn_one(x_dict, y_val)
+        except Exception as e:
+            print(f"Warning: Classifier update error: {e}")
+        
         if drift_detected:
             self.detections.append(self.time_step)
             self.detection_scores.append(prediction_error)
+            # Reset classifier on drift detection
+            self.incremental_classifier = tree.HoeffdingTreeClassifier()
         
         self.time_step += 1
         return drift_detected
     
-    def _calculate_prediction_error(self, y: np.ndarray) -> int:
-        """Calculate prediction error (0 for correct, 1 for incorrect prediction)"""
-        if len(self.label_window) < 10:
+    def _calculate_incremental_prediction_error(self, x_dict: dict, y_true: int) -> int:
+        """Calculate prediction error using river incremental classifier (0 for correct, 1 for incorrect)"""
+        
+        if self.samples_seen < self.min_samples_for_prediction:
             return 0  # No error when insufficient data
         
-        # Use majority class of recent window as prediction
-        recent_labels = list(self.label_window)[-10:]
-        majority_class = 1 if np.mean(recent_labels) > 0.5 else 0
-        
-        # Convert y to scalar if needed
-        if np.isarray(y):
-            y_val = y.item() if y.size == 1 else y[0]
-        else:
-            y_val = y
-        
-        # DDM expects 1 for error, 0 for correct prediction
-        prediction_error = 1 if y_val != majority_class else 0
-        return prediction_error
+        try:
+            # Make prediction
+            prediction = self.incremental_classifier.predict_one(x_dict)
+            
+            if prediction is None:
+                return 0
+            
+            # Return error (1 for incorrect, 0 for correct)
+            return 1 if prediction != y_true else 0
+            
+        except Exception as e:
+            print(f"Warning: Prediction error: {e}")
+            return 0
     
     def _update_skmultiflow(self, error: int) -> bool:
         """Update using skmultiflow DDM with correct API for version 0.5.3"""
@@ -153,5 +179,5 @@ class DDMDetector(BaseDetector):
         self.detections = []
         self.time_step = 0
         self.detection_scores = []
-        self.feature_window.clear()
-        self.label_window.clear()
+        self.incremental_classifier = tree.HoeffdingTreeClassifier()
+        self.samples_seen = 0

@@ -1,19 +1,17 @@
 import numpy as np
-from sklearn.naive_bayes import GaussianNB
-from sklearn.base import clone
+from river import tree
 from typing import List
 
-class OnlineNaiveBayes:
-    """Online Naive Bayes classifier for accuracy sequence generation"""
+class OnlineHoeffdingTree:
+    """Online Hoeffding Tree classifier for accuracy sequence generation"""
 
     def __init__(self):
-        self.classifier = GaussianNB()
+        self.classifier = tree.HoeffdingTreeClassifier()
         self.is_fitted = False
         self.accuracy_history = []
         self.seen_classes = set()
-        self.prediction_buffer = []
-        self.label_buffer = []
-        self.min_samples_per_class = 2  # Minimum samples needed per class before prediction
+        self.sample_count = 0
+        self.min_samples_for_prediction = 2
 
     def partial_fit(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -26,67 +24,47 @@ class OnlineNaiveBayes:
         Returns:
             Current accuracy on recent data
         """
-        # Ensure X is 2D
-        if X.ndim == 1:
-            X = X.reshape(1, -1)
-
-        # Ensure y is array
-        if np.isscalar(y):
-            y = np.array([y])
-
-        # Add to buffer
-        self.prediction_buffer.extend(X)
-        self.label_buffer.extend(y)
+        # Ensure X is 1D for river (it expects dict-like input)
+        if X.ndim > 1:
+            X = X.flatten()
         
-        # Update seen classes
-        self.seen_classes.update(y)
-
-        # Check if we have enough samples for both classes
-        unique_labels, counts = np.unique(self.label_buffer, return_counts=True)
+        # Convert to dict format for river
+        if len(X) == 1:
+            x_dict = {'x0': float(X[0])}
+        else:
+            x_dict = {f'x{i}': float(X[i]) for i in range(len(X))}
         
-        # Initialize accuracy
-        accuracy = 0.5  # Default accuracy when we can't make predictions
-
-        if len(unique_labels) >= 2 and all(count >= self.min_samples_per_class for count in counts):
-            # We have enough samples from multiple classes to train and predict
+        # Ensure y is scalar
+        if np.isarray(y):
+            y_val = y.item() if y.size == 1 else y[0]
+        else:
+            y_val = y
+        
+        y_val = int(y_val)
+        
+        self.sample_count += 1
+        self.seen_classes.add(y_val)
+        
+        # Make prediction before updating (if we have enough samples)
+        accuracy = 0.5  # Default accuracy
+        
+        if self.sample_count > self.min_samples_for_prediction:
             try:
-                # Convert buffer to arrays
-                X_buffer = np.array(self.prediction_buffer)
-                y_buffer = np.array(self.label_buffer)
-
-                if not self.is_fitted:
-                    # First fit with all available classes
-                    all_classes = np.array(sorted(list(self.seen_classes)))
-                    self.classifier.fit(X_buffer, y_buffer)
-                    self.is_fitted = True
+                prediction = self.classifier.predict_one(x_dict)
+                if prediction is not None:
+                    accuracy = 1.0 if prediction == y_val else 0.0
                 else:
-                    # Update with new data
-                    # Use partial_fit with all known classes
-                    all_classes = np.array(sorted(list(self.seen_classes)))
-                    self.classifier.partial_fit(X_buffer[-len(X):], y, classes=all_classes)
-
-                # Make prediction on current sample
-                if len(X_buffer) > 0:
-                    predictions = self.classifier.predict(X)
-                    accuracy = np.mean(predictions == y)
-                
-            except Exception as e:
-                print(f"Warning: Classifier error: {e}")
-                # Use a simple baseline accuracy
-                accuracy = np.mean(y == np.round(np.mean(self.label_buffer)))
+                    accuracy = 0.5
+            except Exception:
+                accuracy = 0.5
         
-        elif len(unique_labels) == 1:
-            # Only one class seen so far - perfect accuracy if predicting that class
-            accuracy = 1.0 if np.all(y == unique_labels[0]) else 0.0
+        # Update the model
+        try:
+            self.classifier.learn_one(x_dict, y_val)
+            self.is_fitted = True
+        except Exception as e:
+            print(f"Warning: Classifier update error: {e}")
         
-        # Limit buffer size to prevent memory issues
-        max_buffer_size = 1000
-        if len(self.prediction_buffer) > max_buffer_size:
-            # Keep only recent samples
-            keep_size = max_buffer_size // 2
-            self.prediction_buffer = self.prediction_buffer[-keep_size:]
-            self.label_buffer = self.label_buffer[-keep_size:]
-
         self.accuracy_history.append(accuracy)
         return accuracy
 
@@ -96,13 +74,14 @@ class OnlineNaiveBayes:
 
     def reset(self):
         """Reset classifier state"""
-        self.classifier = GaussianNB()
+        self.classifier = tree.HoeffdingTreeClassifier()
         self.is_fitted = False
         self.accuracy_history = []
         self.seen_classes = set()
-        self.prediction_buffer = []
-        self.label_buffer = []
+        self.sample_count = 0
 
+# Keep the old name for compatibility
+OnlineNaiveBayes = OnlineHoeffdingTree
 
 def generate_accuracy_sequence(data_stream: np.ndarray,
                              labels: np.ndarray) -> np.ndarray:
@@ -116,7 +95,7 @@ def generate_accuracy_sequence(data_stream: np.ndarray,
     Returns:
         Accuracy sequence over time
     """
-    classifier = OnlineNaiveBayes()
+    classifier = OnlineHoeffdingTree()
     accuracy_sequence = []
 
     # Validate input data

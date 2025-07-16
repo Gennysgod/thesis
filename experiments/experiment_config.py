@@ -141,7 +141,7 @@ DETECTOR_CONFIGS = {
         'window_size': 100,
         'min_detection_window': 200,
         'detection_threshold': 0.2,
-        'model_path': 'models/pretrained_models/quadcdd_pretrained.pth',
+        'model_path': 'models/pretrained_models/quadcdd_pretrained_v2.pth',
         'description': 'Quadruple-based Concept Drift Detection'
     }
 }

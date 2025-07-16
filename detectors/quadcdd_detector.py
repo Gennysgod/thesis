@@ -11,7 +11,7 @@ class QuadCDDDetector(BaseDetector):
     """Simplified QuadCDD detector focusing on drift point detection"""
     
     def __init__(self, model_path: str = None, window_size: int = 100,
-                 min_samples_before_detection: int = 200, **kwargs):
+                 min_samples_before_detection: int = 300, **kwargs):
         super().__init__("QuadCDD")
         
         self.window_size = window_size
@@ -94,7 +94,7 @@ class QuadCDDDetector(BaseDetector):
             
             # Check if this indicates a drift
             # Ds > 0.3 suggests drift is happening in the window
-            if ds_normalized > 0.3 and quadruple['Dv'] > 0.1:
+            if ds_normalized > 0.3 and quadruple['Dv'] > 0.25:
                 self.detections.append(self.time_step)
                 self.last_detection_time = self.time_step
                 self.detection_scores.append(quadruple['Dv'])

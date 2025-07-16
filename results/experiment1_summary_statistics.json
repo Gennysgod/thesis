@@ -3,7 +3,7 @@
     "total_experiments": 360,
     "successful_experiments": 360,
     "success_rate": 1.0,
-    "execution_time_hours": 0.29707895338535306,
+    "execution_time_hours": 0.24921590050061543,
     "detectors": [
       "ADWIN",
       "DDM",
@@ -20,53 +20,53 @@
   },
   "performance_summary": {
     "best_detector_delay": {
-      "detector": "ADWIN",
-      "data_group": "Group A3",
-      "drift_detection_delay_mean": 412.1
+      "detector": "QuadCDD",
+      "data_group": "Group B3",
+      "drift_detection_delay_mean": 141.1
     },
     "best_detector_fpr": {
       "detector": "ADWIN",
-      "data_group": "Group A1",
+      "data_group": "Group A2",
       "false_positive_rate_mean": 0.0
     },
     "best_detector_recall": {
       "detector": "ADWIN",
-      "data_group": "Group A3",
-      "drift_detection_recall_mean": 0.8
+      "data_group": "Group B1",
+      "drift_detection_recall_mean": 1.0
     }
   },
   "detector_rankings": {
     "by_delay": {
-      "ADWIN": 785.8666666666667,
-      "DDM": 955.3249999999999,
-      "QuadCDD": 994.6
+      "DDM": 483.45,
+      "QuadCDD": 520.9833333333333,
+      "ADWIN": 636.4583333333334
     },
     "by_fpr": {
-      "ADWIN": 0.059722222222222225,
-      "DDM": 0.3263888888888889,
-      "QuadCDD": 0.5236111111111111
+      "QuadCDD": 0.024999999999999998,
+      "ADWIN": 0.10618055555555556,
+      "DDM": 0.15625
     },
     "by_recall": {
-      "ADWIN": 0.2916666666666667,
-      "QuadCDD": 0.26666666666666666,
-      "DDM": 0.075
+      "DDM": 0.6833333333333332,
+      "QuadCDD": 0.5916666666666667,
+      "ADWIN": 0.4666666666666666
     }
   },
   "imbalance_impact": {
     "delay_by_imbalance": {
-      "5:5": 955.3249999999999,
-      "7:3": 902.4833333333332,
-      "9:1": 877.9833333333332
+      "5:5": 466.15000000000003,
+      "7:3": 509.77500000000003,
+      "9:1": 664.9666666666666
     },
     "fpr_by_imbalance": {
-      "5:5": 0.3430555555555556,
-      "7:3": 0.20694444444444446,
-      "9:1": 0.3597222222222222
+      "5:5": 0.10881944444444443,
+      "7:3": 0.09541666666666666,
+      "9:1": 0.08319444444444445
     },
     "recall_by_imbalance": {
-      "5:5": 0.225,
-      "7:3": 0.225,
-      "9:1": 0.18333333333333335
+      "5:5": 0.7083333333333334,
+      "7:3": 0.6333333333333333,
+      "9:1": 0.39999999999999997
     }
   }
 }

@@ -20035,3 +20035,25 @@
 2025-07-14 15:48:34,050 - utils.common - INFO - Pre-trained model saved to models/pretrained_models/quadcdd_pretrained.pth
 2025-07-14 15:48:34,051 - utils.common - INFO - Configuration saved to models/pretrained_models/quadcdd_pretrained_config.json
 2025-07-14 15:48:34,051 - utils.common - INFO - Pre-training pipeline completed successfully
+2025-07-16 17:00:05,219 - utils.common - INFO - Starting complete QuadCDD pre-training pipeline
+2025-07-16 17:00:05,219 - utils.common - INFO - Starting pre-training data generation...
+2025-07-16 17:00:05,219 - utils.common - INFO - Generating 2000 training streams...
+2025-07-16 17:00:05,219 - utils.common - INFO - Generators: ['Circle', 'Sine', 'Hyperplane', 'RandomRBF']
+2025-07-16 17:00:05,219 - utils.common - INFO - Drift types: ['sudden', 'gradual', 'early-abrupt']
+2025-07-16 17:00:05,220 - utils.common - INFO - Streams per combination: 166
+2025-07-16 17:01:58,627 - utils.common - INFO - Generated 1992 training samples
+2025-07-16 17:01:58,648 - utils.common - INFO - Training samples: 1593
+2025-07-16 17:01:58,648 - utils.common - INFO - Validation samples: 399
+2025-07-16 17:01:58,649 - utils.common - INFO - Starting QuadCDD model training...
+2025-07-16 17:05:26,996 - utils.common - INFO - Model training completed
+2025-07-16 17:05:26,996 - utils.common - INFO - Evaluating pre-trained model...
+2025-07-16 17:05:28,178 - utils.common - INFO - Evaluation Results:
+2025-07-16 17:05:28,178 - utils.common - INFO -   validation_loss: 0.2041
+2025-07-16 17:05:28,178 - utils.common - INFO -   ds_mae: 0.0993
+2025-07-16 17:05:28,178 - utils.common - INFO -   de_mae: 0.1082
+2025-07-16 17:05:28,178 - utils.common - INFO -   dv_mae: 0.0996
+2025-07-16 17:05:28,178 - utils.common - INFO -   dt_mae: 0.4366
+2025-07-16 17:05:28,179 - utils.common - INFO -   overall_mae: 0.1859
+2025-07-16 17:05:28,184 - utils.common - INFO - Pre-trained model saved to models/pretrained_models/quadcdd_pretrained_v2.pth
+2025-07-16 17:05:28,184 - utils.common - INFO - Configuration saved to models/pretrained_models/quadcdd_pretrained_v2_config.json
+2025-07-16 17:05:28,184 - utils.common - INFO - Pre-training pipeline completed successfully

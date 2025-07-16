@@ -10,106 +10,106 @@
       "total_combinations": 6,
       "passed_combinations": 0,
       "avg_delay": [
+        948.7,
+        970.35,
         1000.0,
-        447.3,
-        412.1,
-        1000.0,
-        1000.0,
-        855.8
+        210.2,
+        203.8,
+        485.7
       ],
       "avg_fpr": [
-        0.0,
-        0.1,
-        0.20833333333333334,
+        0.016666666666666666,
         0.0,
         0.0,
-        0.05
+        0.32375,
+        0.23500000000000001,
+        0.06166666666666667
       ],
       "avg_recall": [
+        0.1,
+        0.05,
         0.0,
-        0.65,
-        0.8,
-        0.0,
-        0.0,
-        0.3
+        1.0,
+        1.0,
+        0.65
       ],
       "pass_rate": 0.0,
-      "overall_avg_delay": 785.8666666666667,
-      "overall_avg_fpr": 0.059722222222222225,
-      "overall_avg_recall": 0.2916666666666667
+      "overall_avg_delay": 636.4583333333334,
+      "overall_avg_fpr": 0.10618055555555556,
+      "overall_avg_recall": 0.4666666666666666
     },
     "DDM": {
       "total_combinations": 6,
       "passed_combinations": 0,
       "avg_delay": [
-        731.95,
-        1000.0,
-        1000.0,
-        1000.0,
-        1000.0,
-        1000.0
+        461.5,
+        747.9,
+        983.35,
+        169.9,
+        158.4,
+        379.65
       ],
       "avg_fpr": [
-        0.3083333333333333,
-        0.1,
-        0.45,
-        0.55,
-        0.1,
-        0.45
+        0.2,
+        0.2,
+        0.2,
+        0.0375,
+        0.0625,
+        0.2375
       ],
       "avg_recall": [
+        0.9,
         0.45,
         0.0,
-        0.0,
-        0.0,
-        0.0,
-        0.0
+        1.0,
+        1.0,
+        0.75
       ],
       "pass_rate": 0.0,
-      "overall_avg_delay": 955.3249999999999,
-      "overall_avg_fpr": 0.3263888888888889,
-      "overall_avg_recall": 0.075
+      "overall_avg_delay": 483.45000000000005,
+      "overall_avg_fpr": 0.15625,
+      "overall_avg_recall": 0.6833333333333332
     },
     "QuadCDD": {
       "total_combinations": 6,
       "passed_combinations": 0,
       "avg_delay": [
+        848.85,
+        834.1,
         1000.0,
-        1000.0,
-        1000.0,
-        1000.0,
-        967.6,
-        1000.0
+        157.75,
+        144.1,
+        141.1
       ],
       "avg_fpr": [
-        0.6,
-        0.3,
-        0.0,
-        0.6,
-        0.6416666666666667,
-        1.0
-      ],
-      "avg_recall": [
-        0.1,
+        0.075,
+        0.075,
         0.0,
         0.0,
-        0.8,
-        0.7,
+        0.0,
         0.0
       ],
+      "avg_recall": [
+        0.25,
+        0.3,
+        0.0,
+        1.0,
+        1.0,
+        1.0
+      ],
       "pass_rate": 0.0,
-      "overall_avg_delay": 994.6,
-      "overall_avg_fpr": 0.5236111111111111,
-      "overall_avg_recall": 0.26666666666666666
+      "overall_avg_delay": 520.9833333333332,
+      "overall_avg_fpr": 0.024999999999999998,
+      "overall_avg_recall": 0.5916666666666667
     }
   },
   "failed_combinations": [
     {
       "detector": "ADWIN",
       "data_group": "Group A1",
-      "avg_delay": 1000.0,
-      "avg_fpr": 0.0,
-      "avg_recall": 0.0,
+      "avg_delay": 948.7,
+      "avg_fpr": 0.016666666666666666,
+      "avg_recall": 0.1,
       "meets_delay": false,
       "meets_fpr": true,
       "meets_recall": false
@@ -117,58 +117,68 @@
     {
       "detector": "ADWIN",
       "data_group": "Group A2",
-      "avg_delay": 447.3,
-      "avg_fpr": 0.1,
-      "avg_recall": 0.65,
+      "avg_delay": 970.35,
+      "avg_fpr": 0.0,
+      "avg_recall": 0.05,
       "meets_delay": false,
-      "meets_fpr": false,
+      "meets_fpr": true,
       "meets_recall": false
     },
     {
       "detector": "ADWIN",
       "data_group": "Group A3",
-      "avg_delay": 412.1,
-      "avg_fpr": 0.20833333333333334,
-      "avg_recall": 0.8,
+      "avg_delay": 1000.0,
+      "avg_fpr": 0.0,
+      "avg_recall": 0.0,
+      "meets_delay": false,
+      "meets_fpr": true,
+      "meets_recall": false
+    },
+    {
+      "detector": "ADWIN",
+      "data_group": "Group B1",
+      "avg_delay": 210.2,
+      "avg_fpr": 0.32375,
+      "avg_recall": 1.0,
       "meets_delay": false,
       "meets_fpr": false,
       "meets_recall": true
     },
     {
       "detector": "ADWIN",
-      "data_group": "Group B1",
-      "avg_delay": 1000.0,
-      "avg_fpr": 0.0,
-      "avg_recall": 0.0,
-      "meets_delay": false,
-      "meets_fpr": true,
-      "meets_recall": false
-    },
-    {
-      "detector": "ADWIN",
       "data_group": "Group B2",
-      "avg_delay": 1000.0,
-      "avg_fpr": 0.0,
-      "avg_recall": 0.0,
+      "avg_delay": 203.8,
+      "avg_fpr": 0.23500000000000001,
+      "avg_recall": 1.0,
       "meets_delay": false,
-      "meets_fpr": true,
-      "meets_recall": false
+      "meets_fpr": false,
+      "meets_recall": true
     },
     {
       "detector": "ADWIN",
       "data_group": "Group B3",
-      "avg_delay": 855.8,
-      "avg_fpr": 0.05,
-      "avg_recall": 0.3,
+      "avg_delay": 485.7,
+      "avg_fpr": 0.06166666666666667,
+      "avg_recall": 0.65,
       "meets_delay": false,
-      "meets_fpr": true,
+      "meets_fpr": false,
       "meets_recall": false
     },
     {
       "detector": "DDM",
       "data_group": "Group A1",
-      "avg_delay": 731.95,
-      "avg_fpr": 0.3083333333333333,
+      "avg_delay": 461.5,
+      "avg_fpr": 0.2,
+      "avg_recall": 0.9,
+      "meets_delay": false,
+      "meets_fpr": false,
+      "meets_recall": true
+    },
+    {
+      "detector": "DDM",
+      "data_group": "Group A2",
+      "avg_delay": 747.9,
+      "avg_fpr": 0.2,
       "avg_recall": 0.45,
       "meets_delay": false,
       "meets_fpr": false,
@@ -176,19 +186,9 @@
     },
     {
       "detector": "DDM",
-      "data_group": "Group A2",
-      "avg_delay": 1000.0,
-      "avg_fpr": 0.1,
-      "avg_recall": 0.0,
-      "meets_delay": false,
-      "meets_fpr": false,
-      "meets_recall": false
-    },
-    {
-      "detector": "DDM",
       "data_group": "Group A3",
-      "avg_delay": 1000.0,
-      "avg_fpr": 0.45,
+      "avg_delay": 983.35,
+      "avg_fpr": 0.2,
       "avg_recall": 0.0,
       "meets_delay": false,
       "meets_fpr": false,
@@ -197,29 +197,29 @@
     {
       "detector": "DDM",
       "data_group": "Group B1",
-      "avg_delay": 1000.0,
-      "avg_fpr": 0.55,
-      "avg_recall": 0.0,
+      "avg_delay": 169.9,
+      "avg_fpr": 0.0375,
+      "avg_recall": 1.0,
       "meets_delay": false,
-      "meets_fpr": false,
-      "meets_recall": false
+      "meets_fpr": true,
+      "meets_recall": true
     },
     {
       "detector": "DDM",
       "data_group": "Group B2",
-      "avg_delay": 1000.0,
-      "avg_fpr": 0.1,
-      "avg_recall": 0.0,
+      "avg_delay": 158.4,
+      "avg_fpr": 0.0625,
+      "avg_recall": 1.0,
       "meets_delay": false,
       "meets_fpr": false,
-      "meets_recall": false
+      "meets_recall": true
     },
     {
       "detector": "DDM",
       "data_group": "Group B3",
-      "avg_delay": 1000.0,
-      "avg_fpr": 0.45,
-      "avg_recall": 0.0,
+      "avg_delay": 379.65,
+      "avg_fpr": 0.2375,
+      "avg_recall": 0.75,
       "meets_delay": false,
       "meets_fpr": false,
       "meets_recall": false
@@ -227,9 +227,9 @@
     {
       "detector": "QuadCDD",
       "data_group": "Group A1",
-      "avg_delay": 1000.0,
-      "avg_fpr": 0.6,
-      "avg_recall": 0.1,
+      "avg_delay": 848.85,
+      "avg_fpr": 0.075,
+      "avg_recall": 0.25,
       "meets_delay": false,
       "meets_fpr": false,
       "meets_recall": false
@@ -237,9 +237,9 @@
     {
       "detector": "QuadCDD",
       "data_group": "Group A2",
-      "avg_delay": 1000.0,
-      "avg_fpr": 0.3,
-      "avg_recall": 0.0,
+      "avg_delay": 834.1,
+      "avg_fpr": 0.075,
+      "avg_recall": 0.3,
       "meets_delay": false,
       "meets_fpr": false,
       "meets_recall": false
@@ -257,32 +257,32 @@
     {
       "detector": "QuadCDD",
       "data_group": "Group B1",
-      "avg_delay": 1000.0,
-      "avg_fpr": 0.6,
-      "avg_recall": 0.8,
+      "avg_delay": 157.75,
+      "avg_fpr": 0.0,
+      "avg_recall": 1.0,
       "meets_delay": false,
-      "meets_fpr": false,
+      "meets_fpr": true,
       "meets_recall": true
     },
     {
       "detector": "QuadCDD",
       "data_group": "Group B2",
-      "avg_delay": 967.6,
-      "avg_fpr": 0.6416666666666667,
-      "avg_recall": 0.7,
+      "avg_delay": 144.1,
+      "avg_fpr": 0.0,
+      "avg_recall": 1.0,
       "meets_delay": false,
-      "meets_fpr": false,
-      "meets_recall": false
+      "meets_fpr": true,
+      "meets_recall": true
     },
     {
       "detector": "QuadCDD",
       "data_group": "Group B3",
-      "avg_delay": 1000.0,
-      "avg_fpr": 1.0,
-      "avg_recall": 0.0,
+      "avg_delay": 141.1,
+      "avg_fpr": 0.0,
+      "avg_recall": 1.0,
       "meets_delay": false,
-      "meets_fpr": false,
-      "meets_recall": false
+      "meets_fpr": true,
+      "meets_recall": true
     }
   ]
 }
