@@ -1,0 +1,72 @@
+{
+  "experiment_info": {
+    "total_experiments": 360,
+    "successful_experiments": 360,
+    "success_rate": 1.0,
+    "execution_time_hours": 0.29707895338535306,
+    "detectors": [
+      "ADWIN",
+      "DDM",
+      "QuadCDD"
+    ],
+    "data_groups": [
+      "Group A1",
+      "Group A2",
+      "Group A3",
+      "Group B1",
+      "Group B2",
+      "Group B3"
+    ]
+  },
+  "performance_summary": {
+    "best_detector_delay": {
+      "detector": "ADWIN",
+      "data_group": "Group A3",
+      "drift_detection_delay_mean": 412.1
+    },
+    "best_detector_fpr": {
+      "detector": "ADWIN",
+      "data_group": "Group A1",
+      "false_positive_rate_mean": 0.0
+    },
+    "best_detector_recall": {
+      "detector": "ADWIN",
+      "data_group": "Group A3",
+      "drift_detection_recall_mean": 0.8
+    }
+  },
+  "detector_rankings": {
+    "by_delay": {
+      "ADWIN": 785.8666666666667,
+      "DDM": 955.3249999999999,
+      "QuadCDD": 994.6
+    },
+    "by_fpr": {
+      "ADWIN": 0.059722222222222225,
+      "DDM": 0.3263888888888889,
+      "QuadCDD": 0.5236111111111111
+    },
+    "by_recall": {
+      "ADWIN": 0.2916666666666667,
+      "QuadCDD": 0.26666666666666666,
+      "DDM": 0.075
+    }
+  },
+  "imbalance_impact": {
+    "delay_by_imbalance": {
+      "5:5": 955.3249999999999,
+      "7:3": 902.4833333333332,
+      "9:1": 877.9833333333332
+    },
+    "fpr_by_imbalance": {
+      "5:5": 0.3430555555555556,
+      "7:3": 0.20694444444444446,
+      "9:1": 0.3597222222222222
+    },
+    "recall_by_imbalance": {
+      "5:5": 0.225,
+      "7:3": 0.225,
+      "9:1": 0.18333333333333335
+    }
+  }
+}
